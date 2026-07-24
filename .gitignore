@@ -1,0 +1,17 @@
+/dbg/
+/leak/
+/opt/
+/point/
+/thread/
+/uba/
+/opt/
+
+prg-dbg
+prg-leak
+prg-thread
+prg-point
+prg-uba
+prg
+
+*.o
+*.d
