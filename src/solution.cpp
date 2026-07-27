@@ -15,11 +15,14 @@ struct square {
 	//const bool predetermined_score;
 	
 	template<std::size_t n>
-	static void print_sections(const std::array<square, n>& board) {
+	static void print_board(const std::array<square, n>& board) {
 		std::cout << "\n";
 		int i = 0;
 		for (const auto& sq : board) {
-			std::cout << "{" << std::setw(2) << static_cast<int>(sq.section) << "} ";
+			std::cout << "{" 
+					  << std::left << std::setw(8) << sq.score 
+					  << std::setw(4) << static_cast<int>(sq.section) 
+					  << sq.has_tower << "} ";
 			if (++i % 8 == 0) {
 				std::cout << "\n";
 			}
@@ -42,7 +45,7 @@ int main()
 	// X ---------------------------------------------------------------------------------------------->
 	}};
 	
-	square::print_sections(knight_board);
+	square::print_board(knight_board);
 
 	return 0;
 }
