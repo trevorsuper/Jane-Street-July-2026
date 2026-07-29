@@ -3,9 +3,11 @@
 #include <array>
 #include <iomanip>
 #include <bitset>
+#include <algorithm>
 
 using s32 = std::int32_t;
 using u64 = std::uint64_t;
+using u32 = std::uint32_t;
 using u8 = std::uint8_t;
 
 void compute_math_steps();
@@ -45,47 +47,131 @@ struct knight {
 	bool altitude;
 };
 
-void compute_math_steps(std::array<u8, 63> *math_steps, std::array<s32, 11> *known_steps)
+void compute_math_steps(std::array<u32, 63> *math_steps, std::array<s32, 11> *known_steps)
 {
-	u64 math_walk = 0b0000000000000000000000000000000000000000000000000000000000000000;
-	(*known_steps)[0] = 0;
+	s32 score = 0;
+	u64 math_walk = 0;
 	u8 k = 0;
+	std::cout << k << "\n";
 	bool altitude = 1;
 	
 	std::bitset<64> bits(math_walk);
 	
-	for (u8 n = 0; n < 64; ++n) {
-		std::cout << bits[n] << "\n";
+	for (int n = 0; n <= 25; ++n) {
+		std::bitset<64> bits(math_walk);
 		if (n == 0) {
 			(*math_steps)[0] = 0;
 		}
-		else if (n <= 18 && n % 3 == 0) {
-			if (altitude == 1) {
+		
+		else if (n > 0 && n <= 18) {
+			if (n % 3 != 0) {
+				if (bits[n] == 0) {
+					score += n;
+					(*math_steps)[n] = score;
+				}
+				else if (bits[n] == 1 && altitude == 0) {
+					score *= n;
+					(*math_steps)[n] = score;
+					altitude = 1;
+				}
+				else if (bits[n] == 1 && altitude == 1) {
+					score /= n;
+					(*math_steps)[n] = score;
+					altitude = 0;
+				}
+			}
+			else if (n % 3 == 0) {
+				if (bits[n] == 0) {
+					score += n;
+					(*math_steps)[n] = score;
+				}
+				else if (bits[n] == 1 && altitude == 0) {
+					score *= n;
+					(*math_steps)[n] = score;
+					altitude = 1;
+				}
+				else if (bits[n] == 1 && altitude == 1) {
+					score /= n;
+					(*math_steps)[n] = score;
+					altitude = 0;
+				}
 				
-			} else if (altitude == 0) {
+				auto it = std::ranges::find(*known_steps, score);
+				if (it == known_steps->end()) {
+					std::cout << "value not found, resetting\n";
+					n = -1;
+					math_walk += 1;
+					(*known_steps) = {528, 449, 750, 88, 272, 1, 16, 23, 138, 37, 1100};
+					score = 0;
+					altitude = 1;
+				}
 				
 			}
 			
-		} else if (n > 19 && k == 0) {
-			if (altitude == 1) {
-				
-			} else if (altitude == 0) {
+		}
+		
+//		else if (n >= 19 && k == 0) {
+//			std::cout << "n >= 19\n";
+//			if (bits[n] == 0) {
+//				score += n;
+//				(*math_steps)[n] = score;
+//			}
+//			else if (bits[n] == 1 && altitude == 0) {
+//				score *= n;
+//				(*math_steps)[n] = score;
+//				altitude = 1;
+//			}
+//			else if (bits[n] == 1 && altitude == 1) {
+//				score /= n;
+//				(*math_steps)[n] = score;
+//				altitude = 0;
+//			}
+//			auto it = std::ranges::find(*known_steps, score);
+//			if (it == known_steps->end()) {
+//				std::cout << "ABOVE 19 not found, resetting\n";
+//				n = -1;
+//				math_walk += 1;
+//				(*known_steps) = {528, 449, 750, 88, 272, 1, 16, 23, 138, 37, 1100};
+//				score = 0;
+//				altitude = 1;
+//			}
+//		}
+		
+		/*else if (k != 0 && n >= 22) {
+			if (n % k == 0) {
 				
 			}
-			
-		} else if (k != 0 && n >= 22 && n % k == 0) {
-			if (altitude == 1) {
-				
-			} else if (altitude == 0) {
+			else if (n % k != 0) {
 				
 			}
 		}
+		
+		else if (k != 0 && n >= 40) {
+			// time to exit loop check
+		}*/
+		
+		std::cout << "n: " << n 
+				  << " altitude: " << altitude 
+				  << " score: " << score 
+				  << " math_walk: " << math_walk 
+				  << " bits[n]: " << bits[n] <<"\n";
+		
+	}
+	std::cout << "score: " << score << "\n";
+	
+	std::cout << "math_steps: ";
+	for (int n = 0; n <= 18; ++n) {
+		std::cout << "[" << n << "] " << (int)(*math_steps)[n] << "\n";
+	}
+	std::cout << "known_steps: ";
+	for (int n = 0; n < 11; ++n) {
+		std::cout << "[" << n << "] " << (int)(*known_steps)[n] << "\n";
 	}
 }
 
 int main()
 {
-	std::array<u8, 63> math_steps = {0};
+	std::array<u32, 63> math_steps = {0};
 	std::array<s32, 11> known_steps {528, 449, 750, 88, 272, 1, 16, 23, 138, 37, 1100};
 	
 	compute_math_steps(&math_steps, &known_steps);
@@ -100,7 +186,7 @@ int main()
 /* | */	{-1, 1, 2, 6, 0, 0},  {-1, 2, 2, 10, 0, 0}, {-1, 3, 2, 11, 0, 0}, {-1, 4, 2, 11, 0, 0}, {-1, 5, 2, 11, 0, 0}, {-1, 6, 2, 12, 0, 0},  {-1, 7, 2, 12, 0, 0}, {-1, 8, 2, 13, 0, 0},
 /* | */	{0, 1, 1, 10, 0, 1},   {-1, 2, 1, 10, 0, 0}, {-1, 3, 1, 10, 0, 0}, {-1, 4, 1, 11, 0, 0}, {-1, 5, 1, 12, 0, 0}, {-1, 6, 1, 12, 0, 0},  {-1, 7, 1, 13, 0, 0}, {-1, 8, 1, 13, 0, 0},
 /* Y */	
-	// X --------------->
+	// X -------->
 	}};
 	
 	square::print_board(knight_board);
