@@ -34,7 +34,7 @@ struct square {
 		}
 	}
 	
-	static square& get_square_at(std::array<square, 64> &board, u8 x, u8 y) {
+	static square &get_square_at(std::array<square, 64> &board, u8 x, u8 y) {
 		u8 index = (8 - y) * 8 + (x - 1);
 		return board.at(index);
 	}
@@ -187,7 +187,7 @@ void compute_math_steps(std::array<u32, 53> *math_steps, std::array<s32, 11> *kn
 						++k;
 						math_walk_18 = 0;
 					}
-				}	
+				}
 			}
 			
 			//std::cout << "n: " << n 
@@ -210,21 +210,32 @@ void compute_math_steps(std::array<u32, 53> *math_steps, std::array<s32, 11> *kn
 void find_path(std::array<square, 64> *knight_board, std::array<u32, 53> *math_steps)	
 {
 	square *sq = nullptr;
-	//knight piece;
+	knight piece;
 	
-	for (int n = 0; n <= 0/*53*/; ++n) {
+	for (int n = 0; n <= 53; ++n) {
 		if (n == 0) {
 			sq = &square::get_square_at(*knight_board, 1, 1);
 			sq->has_tower = 1;
 			sq->score = (*math_steps)[n];
-		
-			square::print_board(*knight_board);	
-			bool test = square::does_section_have_tower(*knight_board, 10);
-			std::cout << "test " << test << "\n";
+			piece.x = 1;
+			piece.y = 1;
+			std::cout << "score[" << n << "] " << sq->score
+					  << " test " << square::does_section_have_tower(*knight_board, 10) << "\n";
 		}
+		else if (n > 0 && n <= 53) {
+			if ((*math_steps)[n - 1] + n == (*math_steps)[n]) {
+				std::cout << "[" << n << "] " << (int)(*math_steps)[n] << " addition\n";
+			}
+			else if ((*math_steps)[n - 1] * n == (*math_steps)[n]) {
+				std::cout << "[" << n << "] " << (int)(*math_steps)[n] << " multiplication\n";
+			}
+			else if ((*math_steps)[n - 1] / n == (*math_steps)[n]) {
+				std::cout << "[" << n << "] " << (int)(*math_steps)[n] << " division\n";
+			}
+		}
+		
+		//square::print_board(*knight_board);
 	}
-	
-	//square::print_board(*knight_board);
 }
 
 int main()
