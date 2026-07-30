@@ -196,9 +196,14 @@ void compute_math_steps(std::array<u32, 53> *math_steps, std::array<s32, 11> *kn
 
 void find_path(std::array<square, 64> *knight_board)
 {
-	auto &sq = square::get_square_at(*knight_board, 1, 1);
-	sq.has_tower = 1;
-	std::cout << "sq " << sq.score << " " << sq.predetermined_score << "\n";
+	square *sq = nullptr;
+	
+	sq = &square::get_square_at(*knight_board, 1, 1);
+	sq->has_tower = 1;
+	std::cout << "sq " << sq->score << " " << sq->predetermined_score << "\n";
+	sq = &square::get_square_at(*knight_board, 1, 2);
+	sq->has_tower = 1;
+	std::cout << "sq " << sq->score << " " << sq->predetermined_score << "\n";
 	square::print_board(*knight_board);
 }
 
