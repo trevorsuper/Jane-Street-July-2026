@@ -57,7 +57,7 @@ define run_binary
 	$(if $(TARGET_ARCH), @echo "Cross-compiled binary created. Skipping execution.",./$<)
 endef
 
-.PHONY: $(CONFIGS) all clean
+.PHONY: $(CONFIGS) all clean debug-no-run
 
 define CONFIG_template
 
@@ -84,6 +84,8 @@ endef
 $(foreach config,$(CONFIGS),$(eval $(call CONFIG_template,$(config))))
 
 all: $(CONFIGS)
+
+debug-no-run: $(target_debug)
 
 clean:
 	rm -rf $(ALL_DIRS) $(ALL_TARGETS)
