@@ -10,9 +10,6 @@ using u64 = std::uint64_t;
 using u32 = std::uint32_t;
 using u8 = std::uint8_t;
 
-void compute_math_steps();
-void print_math_steps();
-
 struct square {
 	s32 score;
 	const u8 x;
@@ -47,7 +44,11 @@ struct knight {
 	bool altitude;
 };
 
-void compute_math_steps(std::array<u32, 63> *math_steps, std::array<s32, 11> *known_steps)
+void compute_math_steps(std::array<u32, 53> *math_steps, std::array<s32, 11> *known_steps);
+void find_path(std::array<square, 64> *knight_board);
+//void add_neighbor_sums();
+
+void compute_math_steps(std::array<u32, 53> *math_steps, std::array<s32, 11> *known_steps)
 {
 	s32 score = 0;
 	u32 math_walk = 0;
@@ -165,7 +166,7 @@ void compute_math_steps(std::array<u32, 63> *math_steps, std::array<s32, 11> *kn
 					math_walk_18 += 1;
 					score = score_18_checkpoint;
 					altitude = altitude_18_checkpoint;
-					if (math_walk_18 >= 250000) {
+					if (math_walk_18 >= 125000) {
 						++k;
 						math_walk_18 = 0;
 					}
@@ -187,22 +188,29 @@ void compute_math_steps(std::array<u32, 63> *math_steps, std::array<s32, 11> *kn
 	
 	std::cout << "score: " << score << "\n";
 	
-	std::cout << "math_steps: ";
-	for (int n = 0; n <= 53; ++n) {
-		std::cout << "[" << n << "] " << (int)(*math_steps)[n] << "\n";
-	}
-	std::cout << "known_steps: ";
-	for (int n = 0; n < 11; ++n) {
-		std::cout << "[" << n << "] " << (int)(*known_steps)[n] << "\n";
+}
+
+void find_path(std::array<square, 64> *knight_board) {
+	
+	for (int n = 0; n <= 1; ++n) {
+		if (n == 0) {
+			(*knight_board)[n].has_tower = 1;
+		}
+		square::print_board(*knight_board);
 	}
 }
 
 int main()
 {
-	std::array<u32, 63> math_steps = {0};
+	std::array<u32, 53> math_steps = {0};
 	std::array<s32, 11> known_steps {528, 449, 750, 88, 272, 1, 16, 23, 138, 37, 1100};
 	
 	compute_math_steps(&math_steps, &known_steps);
+	
+	std::cout << "math_steps: ";
+	for (int n = 0; n <= 53; ++n) {
+		std::cout << "[" << n << "] " << (int)math_steps[n] << "\n";
+	}
 	
 	std::array<square, 64> knight_board = {{
 /* ^ */	{-1, 1, 8, 1, 0, 0}, {-1, 2, 8, 1, 0, 0}, {-1, 3, 8, 1, 0, 0}, {-1, 4, 8, 1, 0, 0}, {-1, 5, 8, 1, 0, 0}, {37, 6, 8, 2, 0, 1}, {-1, 7, 8, 2, 0, 0}, {1100, 8, 8, 2, 0, 1},
@@ -211,13 +219,15 @@ int main()
 /* | */	{528, 1, 5, 6, 0, 1}, {-1, 2, 5, 7, 0, 0}, {-1, 3, 5, 7, 0, 0}, {-1, 4, 5, 8, 0, 0}, {-1, 5, 5, 8, 0, 0}, {-1, 6, 5, 9, 0, 0}, {-1, 7, 5, 5, 0, 0}, {-1, 8, 5, 5, 0, 0},
 /* | */	{-1, 1, 4, 6, 0, 0}, {449, 2, 4, 6, 0, 1}, {-1, 3, 4, 7, 0, 0}, {-1, 4, 4, 8, 0, 0}, {16, 5, 4, 8, 0, 1}, {-1, 6, 4, 9, 0, 0}, {-1, 7, 4, 9, 0, 0}, {-1, 8, 4, 13, 0, 0},
 /* | */	{-1, 1, 3, 6, 0, 0}, {750, 2, 3, 10, 0, 1}, {-1, 3, 3, 7, 0, 0}, {88, 4, 3, 11, 0, 1}, {-1, 5, 3, 9, 0, 0}, {272, 6, 3, 9, 0, 1}, {1, 7, 3, 12, 0, 1}, {-1, 8, 3, 13, 0, 0},
-/* | */	{-1, 1, 2, 6, 0, 0},  {-1, 2, 2, 10, 0, 0}, {-1, 3, 2, 11, 0, 0}, {-1, 4, 2, 11, 0, 0}, {-1, 5, 2, 11, 0, 0}, {-1, 6, 2, 12, 0, 0},  {-1, 7, 2, 12, 0, 0}, {-1, 8, 2, 13, 0, 0},
-/* | */	{0, 1, 1, 10, 0, 1},   {-1, 2, 1, 10, 0, 0}, {-1, 3, 1, 10, 0, 0}, {-1, 4, 1, 11, 0, 0}, {-1, 5, 1, 12, 0, 0}, {-1, 6, 1, 12, 0, 0},  {-1, 7, 1, 13, 0, 0}, {-1, 8, 1, 13, 0, 0},
+/* | */	{-1, 1, 2, 6, 0, 0}, {-1, 2, 2, 10, 0, 0}, {-1, 3, 2, 11, 0, 0}, {-1, 4, 2, 11, 0, 0}, {-1, 5, 2, 11, 0, 0}, {-1, 6, 2, 12, 0, 0}, {-1, 7, 2, 12, 0, 0}, {-1, 8, 2, 13, 0, 0},
+/* | */	{0, 1, 1, 10, 0, 1}, {-1, 2, 1, 10, 0, 0}, {-1, 3, 1, 10, 0, 0}, {-1, 4, 1, 11, 0, 0}, {-1, 5, 1, 12, 0, 0}, {-1, 6, 1, 12, 0, 0}, {-1, 7, 1, 13, 0, 0}, {-1, 8, 1, 13, 0, 0},
 /* Y */	
 	// X -------->
 	}};
 	
-	square::print_board(knight_board);
+	find_path(&knight_board);
+	
+	//add_neighbor_sums();
 	
 	return 0;
 }
