@@ -57,10 +57,6 @@ void compute_math_steps(std::array<u32, 63> *math_steps, std::array<s32, 11> *kn
 	s32 score_18_checkpoint;
 	bool altitude_18_checkpoint;
 	
-	//u64 math_walk_k_checkpoint;
-	//s32 score_k_checkpoint;
-	//bool altitude_k_checkpoint;
-	
 	u8 k = 0;
 	std::cout << k << "\n";
 	
@@ -165,7 +161,7 @@ void compute_math_steps(std::array<u32, 63> *math_steps, std::array<s32, 11> *kn
 				auto it = std::ranges::find(*known_steps, score);
 				if (it == known_steps->end()) {
 					//++k;
-					std::cout << "n: " << n << " ABOVE 19 not found, setting k = " << (int)k << "\n";
+					//std::cout << "n: " << n << " ABOVE 19 not found, setting k = " << (int)k << "\n";
 					n = 18;
 					math_walk_18 += 1;
 					score = score_18_checkpoint;
@@ -176,7 +172,7 @@ void compute_math_steps(std::array<u32, 63> *math_steps, std::array<s32, 11> *kn
 					  << " altitude: " << altitude 
 					  << " score: " << score 
 					  << " math_walk_18: " << math_walk_18 
-					  << " part2_bits[n]: " << part2_bits[n] <<"\n";
+					  << " part2_bits[n]: " << part2_bits[n - 18] <<"\n";
 		}
 		
 		/*else if (k != 0 && n >= 22) {
