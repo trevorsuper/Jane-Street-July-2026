@@ -23,7 +23,7 @@ struct square {
 	{
 		std::cout << "{Score Section Tower}\n";
 		int i = 0;
-		for (const auto& sq : board) {
+		for (const auto &sq : board) {
 			std::cout << "{" 
 					  << std::left << std::setw(7) << sq.score 
 					  << std::setw(4) << static_cast<int>(sq.section) 
@@ -38,6 +38,19 @@ struct square {
 		u8 index = (8 - y) * 8 + (x - 1);
 		return board.at(index);
 	}
+	
+	template<std::size_t n>
+	static bool does_section_have_tower(std::array<square, n> &board, u8 section_target) {
+		for (const auto &sq : board) {
+			if (sq.section == section_target) {
+				if (sq.has_tower == 1) {
+					return 1;
+				}
+			}
+		}
+		return 0;
+	}
+	
 };
 
 struct knight {
@@ -49,7 +62,7 @@ struct knight {
 };
 
 void compute_math_steps(std::array<u32, 53> *math_steps, std::array<s32, 11> *known_steps);
-void find_path(std::array<square, 64> *knight_board);
+void find_path(std::array<square, 64> *knight_board, std::array<u32, 53> *math_steps);
 //void add_neighbor_sums();
 
 void compute_math_steps(std::array<u32, 53> *math_steps, std::array<s32, 11> *known_steps)
@@ -194,17 +207,24 @@ void compute_math_steps(std::array<u32, 53> *math_steps, std::array<s32, 11> *kn
 	
 }
 
-void find_path(std::array<square, 64> *knight_board)
+void find_path(std::array<square, 64> *knight_board, std::array<u32, 53> *math_steps)	
 {
 	square *sq = nullptr;
+	//knight piece;
 	
-	sq = &square::get_square_at(*knight_board, 1, 1);
-	sq->has_tower = 1;
-	std::cout << "sq " << sq->score << " " << sq->predetermined_score << "\n";
-	sq = &square::get_square_at(*knight_board, 1, 2);
-	sq->has_tower = 1;
-	std::cout << "sq " << sq->score << " " << sq->predetermined_score << "\n";
-	square::print_board(*knight_board);
+	for (int n = 0; n <= 0/*53*/; ++n) {
+		if (n == 0) {
+			sq = &square::get_square_at(*knight_board, 1, 1);
+			sq->has_tower = 1;
+			sq->score = (*math_steps)[n];
+		
+			square::print_board(*knight_board);	
+			bool test = square::does_section_have_tower(*knight_board, 10);
+			std::cout << "test " << test << "\n";
+		}
+	}
+	
+	//square::print_board(*knight_board);
 }
 
 int main()
@@ -232,7 +252,7 @@ int main()
 	// X -------->
 	}};
 	
-	find_path(&knight_board);
+	find_path(&knight_board, &math_steps);
 	
 	//add_neighbor_sums();
 	
