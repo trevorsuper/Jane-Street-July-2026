@@ -106,7 +106,7 @@ void compute_math_steps(std::array<u32, 63> *math_steps, std::array<s32, 11> *kn
 				if (n == 18) {
 					score_18_checkpoint = score;
 					altitude_18_checkpoint = altitude;
-					k = 7;
+					if (k == 0) { k = 4; }
 				}
 				
 				auto it = std::ranges::find(*known_steps, score);
@@ -160,33 +160,24 @@ void compute_math_steps(std::array<u32, 63> *math_steps, std::array<s32, 11> *kn
 				}
 				auto it = std::ranges::find(*known_steps, score);
 				if (it == known_steps->end()) {
-					//++k;
-					//std::cout << "n: " << n << " ABOVE 19 not found, setting k = " << (int)k << "\n";
+					std::cout << "n: " << n << " k: " << (int)k << "\n";
 					n = 18;
 					math_walk_18 += 1;
 					score = score_18_checkpoint;
 					altitude = altitude_18_checkpoint;
-				}
+					if (math_walk_18 >= 250000) {
+						++k;
+						math_walk_18 = 0;
+					}
+				}	
 			}
+			
 			std::cout << "n: " << n 
 					  << " altitude: " << altitude 
 					  << " score: " << score 
 					  << " math_walk_18: " << math_walk_18 
 					  << " part2_bits[n]: " << part2_bits[n - 18] <<"\n";
 		}
-		
-		/*else if (k != 0 && n >= 22) {
-			if (n % k == 0) {
-				
-			}
-			else if (n % k != 0) {
-				
-			}
-		}
-		
-		else if (k != 0 && n >= 40) {
-			// time to exit loop check
-		}*/
 		
 	}
 	std::cout << "math_walk " << math_walk << "\n";
