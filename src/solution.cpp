@@ -34,6 +34,10 @@ struct square {
 		}
 	}
 	
+	static square& get_square_at(std::array<square, 64> &board, u8 x, u8 y) {
+		u8 index = (8 - y) * 8 + (x - 1);
+		return board.at(index);
+	}
 };
 
 struct knight {
@@ -112,7 +116,7 @@ void compute_math_steps(std::array<u32, 53> *math_steps, std::array<s32, 11> *kn
 				
 				auto it = std::ranges::find(*known_steps, score);
 				if (it == known_steps->end()) {
-					std::cout << "value not found, resetting\n";
+					//std::cout << "value not found, resetting\n";
 					n = -1;
 					math_walk += 1;
 					score = 0;
@@ -120,11 +124,11 @@ void compute_math_steps(std::array<u32, 53> *math_steps, std::array<s32, 11> *kn
 				}
 				
 			}
-			std::cout << "n: " << n 
-					  << " altitude: " << altitude 
-					  << " score: " << score 
-					  << " math_walk: " << math_walk 
-					  << " part1_bits[n]: " << part1_bits[n] <<"\n";
+			//std::cout << "n: " << n 
+			//		  << " altitude: " << altitude 
+			//		  << " score: " << score 
+			//		  << " math_walk: " << math_walk 
+			//		  << " part1_bits[n]: " << part1_bits[n] <<"\n";
 		}
 		
 		else if (n >= 18 && k >= 4) {
@@ -161,23 +165,23 @@ void compute_math_steps(std::array<u32, 53> *math_steps, std::array<s32, 11> *kn
 				}
 				auto it = std::ranges::find(*known_steps, score);
 				if (it == known_steps->end()) {
-					std::cout << "n: " << n << " k: " << (int)k << "\n";
+					//std::cout << "n: " << n << " k: " << (int)k << "\n";
 					n = 18;
 					math_walk_18 += 1;
 					score = score_18_checkpoint;
 					altitude = altitude_18_checkpoint;
-					if (math_walk_18 >= 125000) {
+					if (math_walk_18 >= 110670) {
 						++k;
 						math_walk_18 = 0;
 					}
 				}	
 			}
 			
-			std::cout << "n: " << n 
-					  << " altitude: " << altitude 
-					  << " score: " << score 
-					  << " math_walk_18: " << math_walk_18 
-					  << " part2_bits[n]: " << part2_bits[n - 18] <<"\n";
+			//std::cout << "n: " << n 
+			//		  << " altitude: " << altitude 
+			//		  << " score: " << score 
+			//		  << " math_walk_18: " << math_walk_18 
+			//		  << " part2_bits[n]: " << part2_bits[n - 18] <<"\n";
 		}
 		
 	}
@@ -190,14 +194,12 @@ void compute_math_steps(std::array<u32, 53> *math_steps, std::array<s32, 11> *kn
 	
 }
 
-void find_path(std::array<square, 64> *knight_board) {
-	
-	for (int n = 0; n <= 1; ++n) {
-		if (n == 0) {
-			(*knight_board)[n].has_tower = 1;
-		}
-		square::print_board(*knight_board);
-	}
+void find_path(std::array<square, 64> *knight_board)
+{
+	auto &sq = square::get_square_at(*knight_board, 1, 1);
+	sq.has_tower = 1;
+	std::cout << "sq " << sq.score << " " << sq.predetermined_score << "\n";
+	square::print_board(*knight_board);
 }
 
 int main()
