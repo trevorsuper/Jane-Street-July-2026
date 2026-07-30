@@ -50,50 +50,67 @@ struct knight {
 void compute_math_steps(std::array<u32, 63> *math_steps, std::array<s32, 11> *known_steps)
 {
 	s32 score = 0;
-	u64 math_walk = 0;
-	u8 k = 0;
-	std::cout << k << "\n";
+	u32 math_walk = 0;
 	bool altitude = 1;
 	
-	std::bitset<64> bits(math_walk);
+	u32 math_walk_18 = 0;
+	s32 score_18_checkpoint;
+	bool altitude_18_checkpoint;
 	
-	for (int n = 0; n <= 25; ++n) {
-		std::bitset<64> bits(math_walk);
+	//u64 math_walk_k_checkpoint;
+	//s32 score_k_checkpoint;
+	//bool altitude_k_checkpoint;
+	
+	u8 k = 0;
+	std::cout << k << "\n";
+	
+	std::bitset<32> part1_bits(math_walk);
+	std::bitset<32> part2_bits(math_walk_18);
+	
+	for (int n = 0; n <= 53; ++n) {
+		std::bitset<32> part1_bits(math_walk);
+		std::bitset<32> part2_bits(math_walk_18);
 		if (n == 0) {
 			(*math_steps)[0] = 0;
 		}
 		
-		else if (n > 0 && n <= 18) {
+		else if (n > 0 && n <= 18 && k == 0) {
 			if (n % 3 != 0) {
-				if (bits[n] == 0) {
+				if (part1_bits[n] == 0) {
 					score += n;
 					(*math_steps)[n] = score;
 				}
-				else if (bits[n] == 1 && altitude == 0) {
+				else if (part1_bits[n] == 1 && altitude == 0) {
 					score *= n;
 					(*math_steps)[n] = score;
 					altitude = 1;
 				}
-				else if (bits[n] == 1 && altitude == 1) {
+				else if (part1_bits[n] == 1 && altitude == 1) {
 					score /= n;
 					(*math_steps)[n] = score;
 					altitude = 0;
 				}
 			}
 			else if (n % 3 == 0) {
-				if (bits[n] == 0) {
+				if (part1_bits[n] == 0) {
 					score += n;
 					(*math_steps)[n] = score;
 				}
-				else if (bits[n] == 1 && altitude == 0) {
+				else if (part1_bits[n] == 1 && altitude == 0) {
 					score *= n;
 					(*math_steps)[n] = score;
 					altitude = 1;
 				}
-				else if (bits[n] == 1 && altitude == 1) {
+				else if (part1_bits[n] == 1 && altitude == 1) {
 					score /= n;
 					(*math_steps)[n] = score;
 					altitude = 0;
+				}
+				
+				if (n == 18) {
+					score_18_checkpoint = score;
+					altitude_18_checkpoint = altitude;
+					k = 7;
 				}
 				
 				auto it = std::ranges::find(*known_steps, score);
@@ -101,41 +118,66 @@ void compute_math_steps(std::array<u32, 63> *math_steps, std::array<s32, 11> *kn
 					std::cout << "value not found, resetting\n";
 					n = -1;
 					math_walk += 1;
-					(*known_steps) = {528, 449, 750, 88, 272, 1, 16, 23, 138, 37, 1100};
 					score = 0;
 					altitude = 1;
 				}
 				
 			}
-			
+			std::cout << "n: " << n 
+					  << " altitude: " << altitude 
+					  << " score: " << score 
+					  << " math_walk: " << math_walk 
+					  << " part1_bits[n]: " << part1_bits[n] <<"\n";
 		}
 		
-//		else if (n >= 19 && k == 0) {
-//			std::cout << "n >= 19\n";
-//			if (bits[n] == 0) {
-//				score += n;
-//				(*math_steps)[n] = score;
-//			}
-//			else if (bits[n] == 1 && altitude == 0) {
-//				score *= n;
-//				(*math_steps)[n] = score;
-//				altitude = 1;
-//			}
-//			else if (bits[n] == 1 && altitude == 1) {
-//				score /= n;
-//				(*math_steps)[n] = score;
-//				altitude = 0;
-//			}
-//			auto it = std::ranges::find(*known_steps, score);
-//			if (it == known_steps->end()) {
-//				std::cout << "ABOVE 19 not found, resetting\n";
-//				n = -1;
-//				math_walk += 1;
-//				(*known_steps) = {528, 449, 750, 88, 272, 1, 16, 23, 138, 37, 1100};
-//				score = 0;
-//				altitude = 1;
-//			}
-//		}
+		else if (n >= 18 && k >= 4) {
+			if ((n - 18) % k != 0) {
+				if (part2_bits[n - 18] == 0) {
+					score += n;
+					(*math_steps)[n] = score;
+				}
+				else if (part2_bits[n - 18] == 1 && altitude == 0) {
+					score *= n;
+					(*math_steps)[n] = score;
+					altitude = 1;
+				}
+				else if (part2_bits[n - 18] == 1 && altitude == 1) {
+					score /= n;
+					(*math_steps)[n] = score;
+					altitude = 0;
+				}
+			}
+			else if ((n - 18) % k == 0) {
+				if (part2_bits[n - 18] == 0) {
+					score += n;
+					(*math_steps)[n] = score;
+				}
+				else if (part2_bits[n - 18] == 1 && altitude == 0) {
+					score *= n;
+					(*math_steps)[n] = score;
+					altitude = 1;
+				}
+				else if (part2_bits[n - 18] == 1 && altitude == 1) {
+					score /= n;
+					(*math_steps)[n] = score;
+					altitude = 0;
+				}
+				auto it = std::ranges::find(*known_steps, score);
+				if (it == known_steps->end()) {
+					//++k;
+					std::cout << "n: " << n << " ABOVE 19 not found, setting k = " << (int)k << "\n";
+					n = 18;
+					math_walk_18 += 1;
+					score = score_18_checkpoint;
+					altitude = altitude_18_checkpoint;
+				}
+			}
+			std::cout << "n: " << n 
+					  << " altitude: " << altitude 
+					  << " score: " << score 
+					  << " math_walk_18: " << math_walk_18 
+					  << " part2_bits[n]: " << part2_bits[n] <<"\n";
+		}
 		
 		/*else if (k != 0 && n >= 22) {
 			if (n % k == 0) {
@@ -150,17 +192,16 @@ void compute_math_steps(std::array<u32, 63> *math_steps, std::array<s32, 11> *kn
 			// time to exit loop check
 		}*/
 		
-		std::cout << "n: " << n 
-				  << " altitude: " << altitude 
-				  << " score: " << score 
-				  << " math_walk: " << math_walk 
-				  << " bits[n]: " << bits[n] <<"\n";
-		
 	}
+	std::cout << "math_walk " << math_walk << "\n";
+	std::cout << "math_walk_18 " << math_walk_18 << "\n";
+	std::cout << "score_18_checkpoint " << score_18_checkpoint << "\n";
+	std::cout << "altitude_18_checkpoint " << altitude_18_checkpoint << "\n";
+	
 	std::cout << "score: " << score << "\n";
 	
 	std::cout << "math_steps: ";
-	for (int n = 0; n <= 18; ++n) {
+	for (int n = 0; n <= 53; ++n) {
 		std::cout << "[" << n << "] " << (int)(*math_steps)[n] << "\n";
 	}
 	std::cout << "known_steps: ";
