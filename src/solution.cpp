@@ -5,6 +5,7 @@
 #include <bitset>
 #include <algorithm>
 
+using s64 = std::int64_t;
 using s32 = std::int32_t;
 using u64 = std::uint64_t;
 using u32 = std::uint32_t;
@@ -73,14 +74,42 @@ struct knight_moves {
 	bool altitude;
 };
 
-u8 compute_math_steps(std::array<u32, 53> *math_steps, std::array<s32, 11> *known_steps);
+inline void evaluate_move(int &n, int &path_find, int k, 
+                          auto piece, auto knight_board, auto math_steps);
+u8 compute_math_steps(std::array<s64, 53> *math_steps, std::array<s32, 11> *known_steps);
 void find_path(std::array<square, 64> *knight_board, 
-			   std::array<u32, 53> *math_steps, 
+			   std::array<s64, 53> *math_steps, 
 			   u8 k, 
 			   std::array<knight_moves, 64> *piece);
 //u64 add_neighbor_sums();
 
-u8 compute_math_steps(std::array<u32, 53> *math_steps, std::array<s32, 11> *known_steps)
+inline void evaluate_move(int &n, u64 &path_find, u8 k, 
+                          auto piece, auto knight_board, auto math_steps) {
+	auto sq = &square::get_square_at(*knight_board, (*piece)[n].x, (*piece)[n].y);
+	if (((n > 0 && n <= 18) && n % 3 != 0) || (n > 18 && n % k != 0)) {
+		//(*piece)[n + 1].x = (*piece)[n].x;
+		//(*piece)[n + 1].y = (*piece)[n].y;
+		if (sq->score != -1 || n + 1 >= 64) {
+			n = -1;
+			path_find += 1;
+		}
+		else {
+			(*piece)[n + 1].x = (*piece)[n].x;
+			(*piece)[n + 1].y = (*piece)[n].y;
+			sq->score = (*math_steps)[n];
+		}
+	}
+	else if (((n > 0 && n <= 18) && n % 3 == 0) || (n > 18 && n % k == 0)) {
+		(*piece)[n + 1].x = (*piece)[n].x;
+		(*piece)[n + 1].y = (*piece)[n].y;
+		if (!(sq->score == (*math_steps)[n] && sq->predetermined_score == 1)) {
+			n = -1;
+			path_find += 1;
+		}
+		else { sq->score = (*math_steps)[n]; }
+	}
+}
+u8 compute_math_steps(std::array<s64, 53> *math_steps, std::array<s32, 11> *known_steps)
 {
 	s32 score = 0;
 	u32 math_walk = 0;
@@ -223,7 +252,7 @@ u8 compute_math_steps(std::array<u32, 53> *math_steps, std::array<s32, 11> *know
 }
 
 void find_path(std::array<square, 64> *knight_board, 
-			   std::array<u32, 53> *math_steps, 
+			   std::array<s64, 53> *math_steps, 
 			   u8 k, 
 			   std::array<knight_moves, 64> *piece)	
 {
@@ -249,8 +278,7 @@ void find_path(std::array<square, 64> *knight_board,
 				case 0:
 					(*piece)[n].x += 1;
 					(*piece)[n].y += 2;
-					if ((*piece)[n].x > 8 || 
-						(*piece)[n].y > 8 || 
+					if ((*piece)[n].x > 8 || (*piece)[n].y > 8 || (*piece)[n].x < 1 || (*piece)[n].y < 1 ||
 						((*piece)[n].altitude == 1 &&
 						square::does_section_have_tower(*knight_board, (*piece)[n].x, (*piece)[n].y)))
 					{
@@ -258,36 +286,13 @@ void find_path(std::array<square, 64> *knight_board,
 						path_find += 1;
 						break;
 					}
-					sq = &square::get_square_at(*knight_board, (*piece)[n].x, (*piece)[n].y);
-					if (((n > 0 && n <= 18) && n % 3 != 0) || (n > 18 && n % k != 0)) {
-						(*piece)[n + 1].x = (*piece)[n].x;
-						(*piece)[n + 1].y = (*piece)[n].y;
-						if (sq->score != -1) {
-							n = -1;
-							path_find += 1;
-							break;
-						}
-						else {
-							sq->score = (*math_steps)[n];
-						}
-					}
-					else if (((n > 0 && n <= 18) && n % 3 == 0) || (n > 18 && n % k == 0)) {
-						(*piece)[n + 1].x = (*piece)[n].x;
-						(*piece)[n + 1].y = (*piece)[n].y;
-						if (!(sq->score == (*math_steps)[n] && sq->predetermined_score == 1)) {
-							n = -1;
-							path_find += 1;
-							break;
-						}
-						else { sq->score = (*math_steps)[n]; }
-					}
+					evaluate_move(n, path_find, k, piece, knight_board, math_steps);
 					break;
 					
 				case 1:
 					(*piece)[n].x += 2;
 					(*piece)[n].y += 1;
-					if ((*piece)[n].x > 8 ||
-						(*piece)[n].y > 8 || 
+					if ((*piece)[n].x > 8 || (*piece)[n].y > 8 || (*piece)[n].x < 1 || (*piece)[n].y < 1 ||
 						((*piece)[n].altitude == 1 &&
 						square::does_section_have_tower(*knight_board, (*piece)[n].x, (*piece)[n].y)))
 					{
@@ -295,13 +300,13 @@ void find_path(std::array<square, 64> *knight_board,
 						path_find += 1;
 						break;
 					}
+					evaluate_move(n, path_find, k, piece, knight_board, math_steps);
 					break;
 					
 				case 2:
 					(*piece)[n].x += 2;
 					(*piece)[n].y -= 1;
-					if ((*piece)[n].x > 8 ||
-						(*piece)[n].y < 1 || 
+					if ((*piece)[n].x > 8 || (*piece)[n].y > 8 || (*piece)[n].x < 1 || (*piece)[n].y < 1 ||
 						((*piece)[n].altitude == 1 &&
 						square::does_section_have_tower(*knight_board, (*piece)[n].x, (*piece)[n].y)))
 					{
@@ -309,13 +314,13 @@ void find_path(std::array<square, 64> *knight_board,
 						path_find += 1;
 						break;
 					}
+					evaluate_move(n, path_find, k, piece, knight_board, math_steps);
 					break;
 					
 				case 3:
 					(*piece)[n].x += 1;
 					(*piece)[n].y -= 2;
-					if ((*piece)[n].x > 8 ||
-						(*piece)[n].y < 1 || 
+					if ((*piece)[n].x > 8 || (*piece)[n].y > 8 || (*piece)[n].x < 1 || (*piece)[n].y < 1 ||
 						((*piece)[n].altitude == 1 &&
 						square::does_section_have_tower(*knight_board, (*piece)[n].x, (*piece)[n].y)))
 					{
@@ -323,13 +328,13 @@ void find_path(std::array<square, 64> *knight_board,
 						path_find += 1;
 						break;
 					}
+					evaluate_move(n, path_find, k, piece, knight_board, math_steps);
 					break;
 					
 				case 4:
 					(*piece)[n].x -= 1;
 					(*piece)[n].y -= 2;
-					if ((*piece)[n].x < 1 ||
-						(*piece)[n].y < 1 || 
+					if ((*piece)[n].x > 8 || (*piece)[n].y > 8 || (*piece)[n].x < 1 || (*piece)[n].y < 1 ||
 						((*piece)[n].altitude == 1 &&
 						square::does_section_have_tower(*knight_board, (*piece)[n].x, (*piece)[n].y)))
 					{
@@ -337,13 +342,13 @@ void find_path(std::array<square, 64> *knight_board,
 						path_find += 1;
 						break;
 					}
+					evaluate_move(n, path_find, k, piece, knight_board, math_steps);
 					break;
 					
 				case 5:
 					(*piece)[n].x -= 2;
 					(*piece)[n].y -= 1;
-					if ((*piece)[n].x < 1 ||
-						(*piece)[n].y < 1 || 
+					if ((*piece)[n].x > 8 || (*piece)[n].y > 8 || (*piece)[n].x < 1 || (*piece)[n].y < 1 ||
 						((*piece)[n].altitude == 1 &&
 						square::does_section_have_tower(*knight_board, (*piece)[n].x, (*piece)[n].y)))
 					{
@@ -351,13 +356,13 @@ void find_path(std::array<square, 64> *knight_board,
 						path_find += 1;
 						break;
 					}
+					evaluate_move(n, path_find, k, piece, knight_board, math_steps);
 					break;
 					
 				case 6:
 					(*piece)[n].x -= 2;
 					(*piece)[n].y += 1;
-					if ((*piece)[n].x < 1 ||
-						(*piece)[n].y > 8 || 
+					if ((*piece)[n].x > 8 || (*piece)[n].y > 8 || (*piece)[n].x < 1 || (*piece)[n].y < 1 ||
 						((*piece)[n].altitude == 1 &&
 						square::does_section_have_tower(*knight_board, (*piece)[n].x, (*piece)[n].y)))
 					{
@@ -365,13 +370,13 @@ void find_path(std::array<square, 64> *knight_board,
 						path_find += 1;
 						break;
 					}
+					evaluate_move(n, path_find, k, piece, knight_board, math_steps);
 					break;
 					
 				case 7:
 					(*piece)[n].x -= 1;
 					(*piece)[n].y += 2;
-					if ((*piece)[n].x < 1 ||
-						(*piece)[n].y > 8 || 
+					if ((*piece)[n].x > 8 || (*piece)[n].y > 8 || (*piece)[n].x < 1 || (*piece)[n].y < 1 ||
 						((*piece)[n].altitude == 1 &&
 						square::does_section_have_tower(*knight_board, (*piece)[n].x, (*piece)[n].y)))
 					{
@@ -379,6 +384,7 @@ void find_path(std::array<square, 64> *knight_board,
 						path_find += 1;
 						break;
 					}
+					evaluate_move(n, path_find, k, piece, knight_board, math_steps);
 					break;
 					
 				}
@@ -388,7 +394,7 @@ void find_path(std::array<square, 64> *knight_board,
 				switch (path_find % 4) {
 				case 0:
 					(*piece)[n].y += 2;
-					if ((*piece)[n].y > 8 ||
+					if ((*piece)[n].x > 8 || (*piece)[n].y > 8 || (*piece)[n].x < 1 || (*piece)[n].y < 1 ||
 						((*piece)[n].altitude == 1 &&
 						square::does_section_have_tower(*knight_board, (*piece)[n].x, (*piece)[n].y)))
 					{
@@ -396,11 +402,12 @@ void find_path(std::array<square, 64> *knight_board,
 						path_find += 1;
 						break;
 					}
+					evaluate_move(n, path_find, k, piece, knight_board, math_steps);
 					break;
 					
 				case 1:
 					(*piece)[n].x += 2;
-					if ((*piece)[n].x > 8 ||
+					if ((*piece)[n].x > 8 || (*piece)[n].y > 8 || (*piece)[n].x < 1 || (*piece)[n].y < 1 ||
 						((*piece)[n].altitude == 1 &&
 						square::does_section_have_tower(*knight_board, (*piece)[n].x, (*piece)[n].y)))
 					{
@@ -408,11 +415,12 @@ void find_path(std::array<square, 64> *knight_board,
 						path_find += 1;
 						break;
 					}
+					evaluate_move(n, path_find, k, piece, knight_board, math_steps);
 					break;
 					
 				case 2:
 					(*piece)[n].y -= 2;
-					if ((*piece)[n].y < 1 ||
+					if ((*piece)[n].x > 8 || (*piece)[n].y > 8 || (*piece)[n].x < 1 || (*piece)[n].y < 1 ||
 						((*piece)[n].altitude == 1 &&
 						square::does_section_have_tower(*knight_board, (*piece)[n].x, (*piece)[n].y)))
 					{
@@ -420,11 +428,12 @@ void find_path(std::array<square, 64> *knight_board,
 						path_find += 1;
 						break;
 					}
+					evaluate_move(n, path_find, k, piece, knight_board, math_steps);
 					break;
 					
 				case 3:
 					(*piece)[n].x -= 2;
-					if ((*piece)[n].x < 1 ||
+					if ((*piece)[n].x > 8 || (*piece)[n].y > 8 || (*piece)[n].x < 1 || (*piece)[n].y < 1 ||
 						((*piece)[n].altitude == 1 &&
 						square::does_section_have_tower(*knight_board, (*piece)[n].x, (*piece)[n].y)))
 					{
@@ -432,6 +441,7 @@ void find_path(std::array<square, 64> *knight_board,
 						path_find += 1;
 						break;
 					}
+					evaluate_move(n, path_find, k, piece, knight_board, math_steps);
 					break;
 					
 				}
@@ -442,63 +452,67 @@ void find_path(std::array<square, 64> *knight_board,
 				switch (path_find % 4) {
 				case 0:
 					(*piece)[n].y += 2;
-					if ((*piece)[n].y > 8)
+					if ((*piece)[n].x > 8 || (*piece)[n].y > 8 || (*piece)[n].x < 1 || (*piece)[n].y < 1)
 					{
 						n = -1;
 						path_find += 1;
 						break;
 					}
+					evaluate_move(n, path_find, k, piece, knight_board, math_steps);
 					break;
 					
 				case 1:
 					(*piece)[n].x += 2;
-					if ((*piece)[n].x > 8)
+					if ((*piece)[n].x > 8 || (*piece)[n].y > 8 || (*piece)[n].x < 1 || (*piece)[n].y < 1)
 					{
 						n = -1;
 						path_find += 1;
 						break;
 					}
+					evaluate_move(n, path_find, k, piece, knight_board, math_steps);
 					break;
 					
 				case 2:
 					(*piece)[n].y -= 2;
-					if ((*piece)[n].y < 1)
+					if ((*piece)[n].x > 8 || (*piece)[n].y > 8 || (*piece)[n].x < 1 || (*piece)[n].y < 1)
 					{
 						n = -1;
 						path_find += 1;
 						break;
 					}
+					evaluate_move(n, path_find, k, piece, knight_board, math_steps);
 					break;
 					
 				case 3:
 					(*piece)[n].x -= 2;
-					if ((*piece)[n].x < 1)
+					if ((*piece)[n].x > 8 || (*piece)[n].y > 8 || (*piece)[n].x < 1 || (*piece)[n].y < 1)
 					{
 						n = -1;
 						path_find += 1;
 						break;
 					}
+					evaluate_move(n, path_find, k, piece, knight_board, math_steps);
 					break;
 					
 				}
 				(*piece)[n].altitude = 0;
 			}
 		}
-		//square::print_board(*knight_board);
+		square::print_board(*knight_board);
 	}
-	square::print_board(*knight_board);
+	//square::print_board(*knight_board);
 }
 
 int main()
 {
-	std::array<u32, 53> math_steps = {0};
+	std::array<s64, 53> math_steps = {0};
 	std::array<s32, 11> known_steps {528, 449, 750, 88, 272, 1, 16, 23, 138, 37, 1100};
 	
 	u8 k = compute_math_steps(&math_steps, &known_steps);
 	
 	std::cout << "math_steps: ";
 	for (int n = 0; n <= 53; ++n) {
-		std::cout << "[" << n << "] " << (int)math_steps[n] << "\n";
+		std::cout << "[" << n << "] " << static_cast<int>(math_steps[n]) << "\n";
 	}
 	
 	std::array<square, 64> knight_board = {{
