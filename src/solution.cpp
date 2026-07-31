@@ -53,19 +53,21 @@ struct square {
 	
 };
 
-struct knight {
-	s32 score;
+struct knight_moves {
 	u8 x;
 	u8 y;
-	u8 section;
+	//u8 section;
 	bool altitude;
 };
 
-void compute_math_steps(std::array<u32, 53> *math_steps, std::array<s32, 11> *known_steps);
-void find_path(std::array<square, 64> *knight_board, std::array<u32, 53> *math_steps);
+u8 compute_math_steps(std::array<u32, 53> *math_steps, std::array<s32, 11> *known_steps);
+void find_path(std::array<square, 64> *knight_board, 
+			   std::array<u32, 53> *math_steps, 
+			   u8 k, 
+			   std::array<knight_moves, 64> *piece);
 //void add_neighbor_sums();
 
-void compute_math_steps(std::array<u32, 53> *math_steps, std::array<s32, 11> *known_steps)
+u8 compute_math_steps(std::array<u32, 53> *math_steps, std::array<s32, 11> *known_steps)
 {
 	s32 score = 0;
 	u32 math_walk = 0;
@@ -76,7 +78,6 @@ void compute_math_steps(std::array<u32, 53> *math_steps, std::array<s32, 11> *kn
 	bool altitude_18_checkpoint;
 	
 	u8 k = 0;
-	std::cout << k << "\n";
 	
 	std::bitset<32> part1_bits(math_walk);
 	std::bitset<32> part2_bits(math_walk_18);
@@ -178,7 +179,7 @@ void compute_math_steps(std::array<u32, 53> *math_steps, std::array<s32, 11> *kn
 				}
 				auto it = std::ranges::find(*known_steps, score);
 				if (it == known_steps->end()) {
-					//std::cout << "n: " << n << " k: " << (int)k << "\n";
+					//std::cout << "n: " << n << " k: " << static_cast<int>(k) << "\n";
 					n = 18;
 					math_walk_18 += 1;
 					score = score_18_checkpoint;
@@ -205,37 +206,82 @@ void compute_math_steps(std::array<u32, 53> *math_steps, std::array<s32, 11> *kn
 	
 	std::cout << "score: " << score << "\n";
 	
+	return k;
 }
 
-void find_path(std::array<square, 64> *knight_board, std::array<u32, 53> *math_steps)	
+void find_path(std::array<square, 64> *knight_board, 
+			   std::array<u32, 53> *math_steps, 
+			   u8 k, 
+			   std::array<knight_moves, 64> *piece)	
 {
+	u64 path_find = 0;
 	square *sq = nullptr;
-	knight piece;
-	
+	std::cout << "k " << static_cast<int>(k) << "\n";
 	for (int n = 0; n <= 53; ++n) {
 		if (n == 0) {
 			sq = &square::get_square_at(*knight_board, 1, 1);
 			sq->has_tower = 1;
 			sq->score = (*math_steps)[n];
-			piece.x = 1;
-			piece.y = 1;
+			(*piece)[n].x = 1;
+			(*piece)[n].y = 1;
+			(*piece)[n].altitude = 1;
 			std::cout << "score[" << n << "] " << sq->score
 					  << " test " << square::does_section_have_tower(*knight_board, 10) << "\n";
 		}
-		else if (n > 0 && n <= 53) {
+		else if (n > 0) {
 			if ((*math_steps)[n - 1] + n == (*math_steps)[n]) {
-				std::cout << "[" << n << "] " << (int)(*math_steps)[n] << " addition\n";
+				std::cout << "[" << n << "] " << static_cast<int>((*math_steps)[n]) << " addition\n";
+					switch (path_find % 8) {
+						case 0:
+							
+						case 1:
+							
+						case 2:
+							
+						case 3:
+							
+						case 4:
+							
+						case 5:
+							
+						case 6:
+							
+						case 7:
+							
+					}
 			}
 			else if ((*math_steps)[n - 1] * n == (*math_steps)[n]) {
-				std::cout << "[" << n << "] " << (int)(*math_steps)[n] << " multiplication\n";
+				std::cout << "[" << n << "] " << static_cast<int>((*math_steps)[n]) << " multiplication\n";
+				switch (path_find % 4) {
+					case 0:
+						
+					case 1:
+						
+					case 2:
+						
+					case 3:
+						
+				}
+				(*piece)[n].altitude = 1;
 			}
 			else if ((*math_steps)[n - 1] / n == (*math_steps)[n]) {
-				std::cout << "[" << n << "] " << (int)(*math_steps)[n] << " division\n";
+				std::cout << "[" << n << "] " << static_cast<int>((*math_steps)[n]) << " division\n";
+				switch (path_find % 4) {
+					case 0:
+						
+					case 1:
+						
+					case 2:
+						
+					case 3:
+						
+				}
+				(*piece)[n].altitude = 0;
 			}
 		}
-		
 		//square::print_board(*knight_board);
 	}
+	square::print_board(*knight_board);
 }
 
 int main()
@@ -243,11 +289,11 @@ int main()
 	std::array<u32, 53> math_steps = {0};
 	std::array<s32, 11> known_steps {528, 449, 750, 88, 272, 1, 16, 23, 138, 37, 1100};
 	
-	compute_math_steps(&math_steps, &known_steps);
-	
+	u8 k = compute_math_steps(&math_steps, &known_steps);
+	std::cout << "k " << static_cast<int>(k) << "\n";
 	std::cout << "math_steps: ";
 	for (int n = 0; n <= 53; ++n) {
-		std::cout << "[" << n << "] " << (int)math_steps[n] << "\n";
+		std::cout << "[" << n << "] " << static_cast<int>(math_steps[n]) << "\n";
 	}
 	
 	std::array<square, 64> knight_board = {{
@@ -263,7 +309,18 @@ int main()
 	// X -------->
 	}};
 	
-	find_path(&knight_board, &math_steps);
+	std::array<knight_moves, 64> piece = {{
+		{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 
+		{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 
+		{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 
+		{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 
+		{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 
+		{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 
+		{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 
+		{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0},
+	}};
+	
+	find_path(&knight_board, &math_steps, k, &piece);
 	
 	//add_neighbor_sums();
 	
