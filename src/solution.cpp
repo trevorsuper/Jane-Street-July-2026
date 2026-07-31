@@ -238,12 +238,12 @@ void find_path(std::array<square, 64> *knight_board,
 			(*piece)[n].x = 1;
 			(*piece)[n].y = 1;
 			(*piece)[n].altitude = 1;
-			std::cout << "score[" << n << "] " << sq->score
-					  << " test " << square::does_section_have_tower(*knight_board, 10) << "\n";
+			//std::cout << "score[" << n << "] " << sq->score
+			//		  << " test " << square::does_section_have_tower(*knight_board, 10) << "\n";
 		}
 		else if (n > 0) {
 			if ((*math_steps)[n - 1] + n == (*math_steps)[n]) {
-				std::cout << "[" << n << "] " << static_cast<int>((*math_steps)[n]) << " addition\n";
+				//std::cout << "[" << n << "] " << static_cast<int>((*math_steps)[n]) << " addition\n";
 				switch (path_find % 8) {
 					
 				case 0:
@@ -256,6 +256,30 @@ void find_path(std::array<square, 64> *knight_board,
 					{
 						n = -1;
 						path_find += 1;
+						break;
+					}
+					sq = &square::get_square_at(*knight_board, (*piece)[n].x, (*piece)[n].y);
+					if (((n > 0 && n <= 18) && n % 3 != 0) || (n > 18 && n % k != 0)) {
+						(*piece)[n + 1].x = (*piece)[n].x;
+						(*piece)[n + 1].y = (*piece)[n].y;
+						if (sq->score != -1) {
+							n = -1;
+							path_find += 1;
+							break;
+						}
+						else {
+							sq->score = (*math_steps)[n];
+						}
+					}
+					else if (((n > 0 && n <= 18) && n % 3 == 0) || (n > 18 && n % k == 0)) {
+						(*piece)[n + 1].x = (*piece)[n].x;
+						(*piece)[n + 1].y = (*piece)[n].y;
+						if (!(sq->score == (*math_steps)[n] && sq->predetermined_score == 1)) {
+							n = -1;
+							path_find += 1;
+							break;
+						}
+						else { sq->score = (*math_steps)[n]; }
 					}
 					break;
 					
@@ -269,6 +293,7 @@ void find_path(std::array<square, 64> *knight_board,
 					{
 						n = -1;
 						path_find += 1;
+						break;
 					}
 					break;
 					
@@ -282,6 +307,7 @@ void find_path(std::array<square, 64> *knight_board,
 					{
 						n = -1;
 						path_find += 1;
+						break;
 					}
 					break;
 					
@@ -295,6 +321,7 @@ void find_path(std::array<square, 64> *knight_board,
 					{
 						n = -1;
 						path_find += 1;
+						break;
 					}
 					break;
 					
@@ -308,6 +335,7 @@ void find_path(std::array<square, 64> *knight_board,
 					{
 						n = -1;
 						path_find += 1;
+						break;
 					}
 					break;
 					
@@ -321,6 +349,7 @@ void find_path(std::array<square, 64> *knight_board,
 					{
 						n = -1;
 						path_find += 1;
+						break;
 					}
 					break;
 					
@@ -334,6 +363,7 @@ void find_path(std::array<square, 64> *knight_board,
 					{
 						n = -1;
 						path_find += 1;
+						break;
 					}
 					break;
 					
@@ -347,13 +377,14 @@ void find_path(std::array<square, 64> *knight_board,
 					{
 						n = -1;
 						path_find += 1;
+						break;
 					}
 					break;
 					
 				}
 			}
 			else if ((*math_steps)[n - 1] * n == (*math_steps)[n]) {
-				std::cout << "[" << n << "] " << static_cast<int>((*math_steps)[n]) << " multiplication\n";
+				//std::cout << "[" << n << "] " << static_cast<int>((*math_steps)[n]) << " multiplication\n";
 				switch (path_find % 4) {
 				case 0:
 					(*piece)[n].y += 2;
@@ -361,7 +392,9 @@ void find_path(std::array<square, 64> *knight_board,
 						((*piece)[n].altitude == 1 &&
 						square::does_section_have_tower(*knight_board, (*piece)[n].x, (*piece)[n].y)))
 					{
-						
+						n = -1;
+						path_find += 1;
+						break;
 					}
 					break;
 					
@@ -373,6 +406,7 @@ void find_path(std::array<square, 64> *knight_board,
 					{
 						n = -1;
 						path_find += 1;
+						break;
 					}
 					break;
 					
@@ -384,6 +418,7 @@ void find_path(std::array<square, 64> *knight_board,
 					{
 						n = -1;
 						path_find += 1;
+						break;
 					}
 					break;
 					
@@ -395,6 +430,7 @@ void find_path(std::array<square, 64> *knight_board,
 					{
 						n = -1;
 						path_find += 1;
+						break;
 					}
 					break;
 					
@@ -402,7 +438,7 @@ void find_path(std::array<square, 64> *knight_board,
 				(*piece)[n].altitude = 1;
 			}
 			else if ((*math_steps)[n - 1] / n == (*math_steps)[n]) {
-				std::cout << "[" << n << "] " << static_cast<int>((*math_steps)[n]) << " division\n";
+				//std::cout << "[" << n << "] " << static_cast<int>((*math_steps)[n]) << " division\n";
 				switch (path_find % 4) {
 				case 0:
 					(*piece)[n].y += 2;
@@ -410,6 +446,7 @@ void find_path(std::array<square, 64> *knight_board,
 					{
 						n = -1;
 						path_find += 1;
+						break;
 					}
 					break;
 					
@@ -419,6 +456,7 @@ void find_path(std::array<square, 64> *knight_board,
 					{
 						n = -1;
 						path_find += 1;
+						break;
 					}
 					break;
 					
@@ -428,6 +466,7 @@ void find_path(std::array<square, 64> *knight_board,
 					{
 						n = -1;
 						path_find += 1;
+						break;
 					}
 					break;
 					
@@ -437,6 +476,7 @@ void find_path(std::array<square, 64> *knight_board,
 					{
 						n = -1;
 						path_find += 1;
+						break;
 					}
 					break;
 					
@@ -455,6 +495,11 @@ int main()
 	std::array<s32, 11> known_steps {528, 449, 750, 88, 272, 1, 16, 23, 138, 37, 1100};
 	
 	u8 k = compute_math_steps(&math_steps, &known_steps);
+	
+	std::cout << "math_steps: ";
+	for (int n = 0; n <= 53; ++n) {
+		std::cout << "[" << n << "] " << (int)math_steps[n] << "\n";
+	}
 	
 	std::array<square, 64> knight_board = {{
 /* ^ */	{-1, 1, 8, 1, 0, 0}, {-1, 2, 8, 1, 0, 0}, {-1, 3, 8, 1, 0, 0}, {-1, 4, 8, 1, 0, 0}, {-1, 5, 8, 1, 0, 0}, {37, 6, 8, 2, 0, 1}, {-1, 7, 8, 2, 0, 0}, {1100, 8, 8, 2, 0, 1},
