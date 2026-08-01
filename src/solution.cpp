@@ -86,120 +86,17 @@ struct knight_moves {
 	bool altitude;
 };
 
-void perform_and_evaluate_move(int *n, 
-							   u8 k,
-							   std::array<knight_moves, 64> *piece,
-							   std::array<square, 64> *knight_board, 
-							   std::array<s64, 53> *math_steps, 
-							   bool add_or_md);
-							   
-u8 compute_math_steps(std::array<s64, 53> *math_steps, std::array<s32, 11> *known_steps);
+struct computation {
+	s64 value;
+	char operation;
+};
 
-void find_path(std::array<square, 64> *knight_board, 
-			   std::array<s64, 53> *math_steps, 
-			   u8 k, 
-			   std::array<knight_moves, 64> *piece);
+							   
+u8 compute_math_steps(std::array<computation, 53> *math_steps, std::array<s32, 11> *known_steps);
+
 //u64 add_neighbor_sums();
 
-void perform_and_evaluate_move(int *n, 
-							   u8 k,
-							   std::array<knight_moves, 64> *piece,
-							   std::array<square, 64> *knight_board, 
-							   std::array<s64, 53> *math_steps, 
-							   bool add_or_md) {
-	square *sq = &square::get_square_at(*knight_board, (*piece)[(*n)].x, (*piece)[(*n)].y);
-	bool divisible = (((*n) > 0 && (*n) <= 18) && (*n) % 3 == 0) || ((*n) > 18 && (*n) % k == 0);
-	
-	if (add_or_md == 1) {
-		for (int i = 0; i < 8; ++i) {
-			(*piece)[(*n)] = (*piece)[(*n) - 1];
-			//std::cout << "reset in addition ";
-			//square::print_square(*knight_board, (*piece)[n].x, (*piece)[n].y);
-			switch (i) {
-				case 0: (*piece)[(*n)].x += 1; (*piece)[(*n)].y += 2; std::cout << "North North East\n"; break;
-				case 1: (*piece)[(*n)].x += 2; (*piece)[(*n)].y += 1; std::cout << "East North East\n"; break;
-				case 2: (*piece)[(*n)].x += 2; (*piece)[(*n)].y -= 1; std::cout << "East South East\n"; break;
-				case 3: (*piece)[(*n)].x += 1; (*piece)[(*n)].y -= 2; std::cout << "South South East\n"; break;
-				case 4: (*piece)[(*n)].x -= 1; (*piece)[(*n)].y -= 2; std::cout << "South South West\n"; break;
-				case 5: (*piece)[(*n)].x -= 2; (*piece)[(*n)].y -= 1; std::cout << "West South West\n"; break;
-				case 6: (*piece)[(*n)].x -= 2; (*piece)[(*n)].y += 1; std::cout << "West North West\n"; break;
-				case 7: (*piece)[(*n)].x -= 1; (*piece)[(*n)].y += 2; std::cout << "North North West\n"; break;
-			}
-			
-			if ((*piece)[(*n)].x > 8 || (*piece)[(*n)].y > 8 || (*piece)[(*n)].x < 1 || (*piece)[(*n)].y < 1) {
-				std::cout << "Out of Bounds\n";
-				(*piece)[(*n)] = (*piece)[(*n) - 1];
-				continue;
-			}
-			sq = &square::get_square_at(*knight_board, (*piece)[(*n)].x, (*piece)[(*n)].y);
-			if ((*piece)[(*n)].altitude == 1 && 
-					  square::does_section_have_tower(*knight_board, (*piece)[(*n)].x, (*piece)[(*n)].y)) {
-				std::cout << "Altitude is 1 and section " << static_cast<int>(sq->section) << " already has tower\n";
-				square::print_square(*knight_board, (*piece)[(*n)].x, (*piece)[(*n)].y);
-				continue;
-			}
-			if (!divisible) {
-				std::cout << "Not Divisible setting sq->score = (*math_steps)[(*n)]\n";
-				sq->score = (*math_steps)[(*n)];
-				if ((*piece)[(*n)].altitude == 1) { sq->has_tower = 1; }
-				break;
-			}
-			if (divisible && sq->score == (*math_steps)[(*n)]) {
-				std::cout << "Divisible, sq->score == (*math_steps)[(*n)]\n";
-				if ((*piece)[(*n)].altitude == 1) { sq->has_tower = 1; }
-				break;
-			}
-			if (divisible && sq->score != (*math_steps)[(*n)]) {
-				std::cout << "Divisible, sq->score != (*math_steps)[(*n)]\n";
-				break;
-			}
-			
-		}
-	}
-	else {
-		for (int i = 0; i < 4; ++i) {
-			(*piece)[(*n)] = (*piece)[(*n) - 1];
-			switch(i) {
-				case 0: (*piece)[(*n)].y += 2; std::cout << "North\n"; break;
-				case 1: (*piece)[(*n)].x += 2; std::cout << "East\n"; break;
-				case 2: (*piece)[(*n)].y -= 2; std::cout << "South\n"; break;
-				case 3: (*piece)[(*n)].x -= 2; std::cout << "West\n"; break;
-			}
-			
-			if ((*piece)[(*n)].x > 8 || (*piece)[(*n)].y > 8 || (*piece)[(*n)].x < 1 || (*piece)[(*n)].y < 1) {
-				std::cout << "Out of Bounds\n";
-				(*piece)[(*n)] = (*piece)[(*n) - 1];
-				continue;
-			}
-			sq = &square::get_square_at(*knight_board, (*piece)[(*n)].x, (*piece)[(*n)].y);
-			if ((*piece)[(*n)].altitude == 1 && 
-					  square::does_section_have_tower(*knight_board, (*piece)[(*n)].x, (*piece)[(*n)].y)) {
-				std::cout << "Altitude is 1 and section " << static_cast<int>(sq->section) << " already has tower\n";
-				square::print_square(*knight_board, (*piece)[(*n)].x, (*piece)[(*n)].y);
-				continue;
-			}
-			if (!divisible) {
-				std::cout << "Not Divisible setting sq->score = (*math_steps)[(*n)]\n";
-				sq->score = (*math_steps)[(*n)];
-				if ((*piece)[(*n)].altitude == 1) { sq->has_tower = 1; }
-				break;
-			}
-			if (divisible && sq->score == (*math_steps)[(*n)]) {
-				std::cout << "Divisible, sq->score == (*math_steps)[(*n)]\n";
-				if ((*piece)[(*n)].altitude == 1) { sq->has_tower = 1; }
-				break;
-			}
-			if (divisible && sq->score != (*math_steps)[(*n)]) {
-				std::cout << "Divisible, sq->score != (*math_steps)[(*n)]\n";
-				break;
-			}
-			
-		}
-	}
-	
-}
-
-u8 compute_math_steps(std::array<s64, 53> *math_steps, std::array<s32, 11> *known_steps)
+u8 compute_math_steps(std::array<computation, 53> *math_steps, std::array<s32, 11> *known_steps)
 {
 	s32 score = 0;
 	u32 math_walk = 0;
@@ -218,39 +115,45 @@ u8 compute_math_steps(std::array<s64, 53> *math_steps, std::array<s32, 11> *know
 		std::bitset<32> part1_bits(math_walk);
 		std::bitset<32> part2_bits(math_walk_18);
 		if (n == 0) {
-			(*math_steps)[0] = 0;
+			(*math_steps)[0].value = 0;
 		}
 		
 		else if (n > 0 && n <= 18 && k == 0) {
 			if (n % 3 != 0) {
 				if (part1_bits[n] == 0) {
 					score += n;
-					(*math_steps)[n] = score;
+					(*math_steps)[n].value = score;
+					(*math_steps)[n].operation = '+';
 				}
 				else if (part1_bits[n] == 1 && altitude == 0) {
 					score *= n;
-					(*math_steps)[n] = score;
+					(*math_steps)[n].value = score;
+					(*math_steps)[n].operation = '*';
 					altitude = 1;
 				}
 				else if (part1_bits[n] == 1 && altitude == 1) {
 					score /= n;
-					(*math_steps)[n] = score;
+					(*math_steps)[n].value = score;
+					(*math_steps)[n].operation = '/';
 					altitude = 0;
 				}
 			}
 			else if (n % 3 == 0) {
 				if (part1_bits[n] == 0) {
 					score += n;
-					(*math_steps)[n] = score;
+					(*math_steps)[n].value = score;
+					(*math_steps)[n].operation = '+';
 				}
 				else if (part1_bits[n] == 1 && altitude == 0) {
 					score *= n;
-					(*math_steps)[n] = score;
+					(*math_steps)[n].value = score;
+					(*math_steps)[n].operation = '*';
 					altitude = 1;
 				}
 				else if (part1_bits[n] == 1 && altitude == 1) {
 					score /= n;
-					(*math_steps)[n] = score;
+					(*math_steps)[n].value = score;
+					(*math_steps)[n].operation = '/';
 					altitude = 0;
 				}
 				
@@ -281,32 +184,38 @@ u8 compute_math_steps(std::array<s64, 53> *math_steps, std::array<s32, 11> *know
 			if ((n - 18) % k != 0) {
 				if (part2_bits[n - 18] == 0) {
 					score += n;
-					(*math_steps)[n] = score;
+					(*math_steps)[n].value = score;
+					(*math_steps)[n].operation = '+';
 				}
 				else if (part2_bits[n - 18] == 1 && altitude == 0) {
 					score *= n;
-					(*math_steps)[n] = score;
+					(*math_steps)[n].value = score;
+					(*math_steps)[n].operation = '*';
 					altitude = 1;
 				}
 				else if (part2_bits[n - 18] == 1 && altitude == 1) {
 					score /= n;
-					(*math_steps)[n] = score;
+					(*math_steps)[n].value = score;
+					(*math_steps)[n].operation = '/';
 					altitude = 0;
 				}
 			}
 			else if ((n - 18) % k == 0) {
 				if (part2_bits[n - 18] == 0) {
 					score += n;
-					(*math_steps)[n] = score;
+					(*math_steps)[n].value = score;
+					(*math_steps)[n].operation = '+';
 				}
 				else if (part2_bits[n - 18] == 1 && altitude == 0) {
 					score *= n;
-					(*math_steps)[n] = score;
+					(*math_steps)[n].value = score;
+					(*math_steps)[n].operation = '*';
 					altitude = 1;
 				}
 				else if (part2_bits[n - 18] == 1 && altitude == 1) {
 					score /= n;
-					(*math_steps)[n] = score;
+					(*math_steps)[n].value = score;
+					(*math_steps)[n].operation = '/';
 					altitude = 0;
 				}
 				auto it = std::ranges::find(*known_steps, score);
@@ -341,86 +250,47 @@ u8 compute_math_steps(std::array<s64, 53> *math_steps, std::array<s32, 11> *know
 	return k;
 }
 
-void find_path(std::array<square, 64> *knight_board, 
-			   std::array<s64, 53> *math_steps, 
-			   u8 k, 
-			   std::array<knight_moves, 64> *piece)	
-{
-	//u64 path_find = 0;
-	square *sq = nullptr;
-	std::cout << "k " << static_cast<int>(k) << "\n";
-	for (int n = 0; n <= 53; ++n) {
-		if (n == 0) {
-			for (auto &square_item : *knight_board) {
-				if (!square_item.predetermined_score) {
-					square_item.score = -1;
-				}
-				square_item.has_tower = 0;
-			}
-			sq = &square::get_square_at(*knight_board, 1, 1);
-			sq->has_tower = 1;
-			sq->score = (*math_steps)[n];
-			square::print_board(*knight_board);
-			(*piece)[n] = {1, 1, 1};
-		}
-		else {
-			square::print_board(*knight_board);
-			(*piece)[n] = (*piece)[n - 1];
-			if ((*math_steps)[n - 1] + n == (*math_steps)[n]) {
-				std::cout << "math_steps[" << n << "] " << static_cast<int>((*math_steps)[n]) << " addition\n";
-				perform_and_evaluate_move(&n, k, piece, knight_board, math_steps, 1);
-			}
-			else if ((*math_steps)[n - 1] * n == (*math_steps)[n]) {
-				std::cout << "math_steps[" << n << "] " << static_cast<int>((*math_steps)[n]) << " multiplication\n";
-				(*piece)[n].altitude = 1;
-				perform_and_evaluate_move(&n, k, piece, knight_board, math_steps, 0);
-			}
-			else if ((*math_steps)[n - 1] / n == (*math_steps)[n]) {
-				std::cout << "math_steps[" << n << "] " << static_cast<int>((*math_steps)[n]) << " division\n";
-				(*piece)[n].altitude = 0;
-				perform_and_evaluate_move(&n, k, piece, knight_board, math_steps, 0);
-			}
-		}
-	}
-}
-
 int main()
 {
-	std::array<s64, 53> math_steps = {0};
+	std::array<computation, 53> math_steps = {{
+		{0, 0}
+	}};
+	
 	std::array<s32, 11> known_steps {528, 449, 750, 88, 272, 1, 16, 23, 138, 37, 1100};
 	
 	u8 k = compute_math_steps(&math_steps, &known_steps);
-	
+	std::cout << "k = " << static_cast<int>(k) << "\n";
 	std::cout << "math_steps: ";
 	for (int n = 0; n <= 53; ++n) {
-		std::cout << "[" << n << "] " << static_cast<int>(math_steps[n]) << "\n";
+		std::cout << "[" << n << "] " << static_cast<int>(math_steps[n].value) 
+				  << " " << math_steps[n].operation << "\n";
 	}
 	
-	std::array<square, 64> knight_board = {{
-/* ^ */	{-1, 1, 8, 1, 0, 0}, {-1, 2, 8, 1, 0, 0}, {-1, 3, 8, 1, 0, 0}, {-1, 4, 8, 1, 0, 0}, {-1, 5, 8, 1, 0, 0}, {37, 6, 8, 2, 0, 1}, {-1, 7, 8, 2, 0, 0}, {1100, 8, 8, 2, 0, 1},
-/* | */	{-1, 1, 7, 3, 0, 0}, {-1, 2, 7, 3, 0, 0}, {-1, 3, 7, 3, 0, 0}, {-1, 4, 7, 4, 0, 0}, {-1, 5, 7, 4, 0, 0}, {-1, 6, 7, 5, 0, 0}, {-1, 7, 7, 5, 0, 0}, {-1, 8, 7, 2, 0, 0},
-/* | */	{-1, 1, 6, 3, 0, 0}, {-1, 2, 6, 7, 0, 0}, {-1, 3, 6, 3, 0, 0}, {23, 4, 6, 4, 0, 1}, {-1, 5, 6, 4, 0, 0}, {138, 6, 6, 4, 0, 1}, {-1, 7, 6, 5, 0, 0}, {-1, 8, 6, 2, 0, 0},
-/* | */	{528, 1, 5, 6, 0, 1}, {-1, 2, 5, 7, 0, 0}, {-1, 3, 5, 7, 0, 0}, {-1, 4, 5, 8, 0, 0}, {-1, 5, 5, 8, 0, 0}, {-1, 6, 5, 9, 0, 0}, {-1, 7, 5, 5, 0, 0}, {-1, 8, 5, 5, 0, 0},
-/* | */	{-1, 1, 4, 6, 0, 0}, {449, 2, 4, 6, 0, 1}, {-1, 3, 4, 7, 0, 0}, {-1, 4, 4, 8, 0, 0}, {16, 5, 4, 8, 0, 1}, {-1, 6, 4, 9, 0, 0}, {-1, 7, 4, 9, 0, 0}, {-1, 8, 4, 13, 0, 0},
-/* | */	{-1, 1, 3, 6, 0, 0}, {750, 2, 3, 10, 0, 1}, {-1, 3, 3, 7, 0, 0}, {88, 4, 3, 11, 0, 1}, {-1, 5, 3, 9, 0, 0}, {272, 6, 3, 9, 0, 1}, {1, 7, 3, 12, 0, 1}, {-1, 8, 3, 13, 0, 0},
-/* | */	{-1, 1, 2, 6, 0, 0}, {-1, 2, 2, 10, 0, 0}, {-1, 3, 2, 11, 0, 0}, {-1, 4, 2, 11, 0, 0}, {-1, 5, 2, 11, 0, 0}, {-1, 6, 2, 12, 0, 0}, {-1, 7, 2, 12, 0, 0}, {-1, 8, 2, 13, 0, 0},
-/* | */	{0, 1, 1, 10, 0, 1}, {-1, 2, 1, 10, 0, 0}, {-1, 3, 1, 10, 0, 0}, {-1, 4, 1, 11, 0, 0}, {-1, 5, 1, 12, 0, 0}, {-1, 6, 1, 12, 0, 0}, {-1, 7, 1, 13, 0, 0}, {-1, 8, 1, 13, 0, 0},
+	//std::array<square, 64> knight_board = {{
+/* ^ */	//{-1, 1, 8, 1, 0, 0}, {-1, 2, 8, 1, 0, 0}, {-1, 3, 8, 1, 0, 0}, {-1, 4, 8, 1, 0, 0}, {-1, 5, 8, 1, 0, 0}, {37, 6, 8, 2, 0, 1}, {-1, 7, 8, 2, 0, 0}, {1100, 8, 8, 2, 0, 1},
+/* | */	//{-1, 1, 7, 3, 0, 0}, {-1, 2, 7, 3, 0, 0}, {-1, 3, 7, 3, 0, 0}, {-1, 4, 7, 4, 0, 0}, {-1, 5, 7, 4, 0, 0}, {-1, 6, 7, 5, 0, 0}, {-1, 7, 7, 5, 0, 0}, {-1, 8, 7, 2, 0, 0},
+/* | */	//{-1, 1, 6, 3, 0, 0}, {-1, 2, 6, 7, 0, 0}, {-1, 3, 6, 3, 0, 0}, {23, 4, 6, 4, 0, 1}, {-1, 5, 6, 4, 0, 0}, {138, 6, 6, 4, 0, 1}, {-1, 7, 6, 5, 0, 0}, {-1, 8, 6, 2, 0, 0},
+/* | */	//{528, 1, 5, 6, 0, 1}, {-1, 2, 5, 7, 0, 0}, {-1, 3, 5, 7, 0, 0}, {-1, 4, 5, 8, 0, 0}, {-1, 5, 5, 8, 0, 0}, {-1, 6, 5, 9, 0, 0}, {-1, 7, 5, 5, 0, 0}, {-1, 8, 5, 5, 0, 0},
+/* | */	//{-1, 1, 4, 6, 0, 0}, {449, 2, 4, 6, 0, 1}, {-1, 3, 4, 7, 0, 0}, {-1, 4, 4, 8, 0, 0}, {16, 5, 4, 8, 0, 1}, {-1, 6, 4, 9, 0, 0}, {-1, 7, 4, 9, 0, 0}, {-1, 8, 4, 13, 0, 0},
+/* | */	//{-1, 1, 3, 6, 0, 0}, {750, 2, 3, 10, 0, 1}, {-1, 3, 3, 7, 0, 0}, {88, 4, 3, 11, 0, 1}, {-1, 5, 3, 9, 0, 0}, {272, 6, 3, 9, 0, 1}, {1, 7, 3, 12, 0, 1}, {-1, 8, 3, 13, 0, 0},
+/* | */	//{-1, 1, 2, 6, 0, 0}, {-1, 2, 2, 10, 0, 0}, {-1, 3, 2, 11, 0, 0}, {-1, 4, 2, 11, 0, 0}, {-1, 5, 2, 11, 0, 0}, {-1, 6, 2, 12, 0, 0}, {-1, 7, 2, 12, 0, 0}, {-1, 8, 2, 13, 0, 0},
+/* | */	//{0, 1, 1, 10, 0, 1}, {-1, 2, 1, 10, 0, 0}, {-1, 3, 1, 10, 0, 0}, {-1, 4, 1, 11, 0, 0}, {-1, 5, 1, 12, 0, 0}, {-1, 6, 1, 12, 0, 0}, {-1, 7, 1, 13, 0, 0}, {-1, 8, 1, 13, 0, 0},
 /* Y */	
 	// X -------->
-	}};
+	//}};
 	
-	std::array<knight_moves, 64> piece = {{
-		{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 
-		{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 
-		{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 
-		{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 
-		{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 
-		{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 
-		{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 
-		{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0},
-	}};
+	//std::array<knight_moves, 64> piece = {{
+	//	{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 
+	//	{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 
+	//	{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 
+	//	{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 
+	//	{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 
+	//	{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 
+	//	{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 
+	//	{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0},
+	//}};
 	
-	find_path(&knight_board, &math_steps, k, &piece);
+	//find_path(&knight_board, &math_steps, k, &piece);
 	
 	//add_neighbor_sums();
 	
