@@ -365,6 +365,16 @@ void evaluate_move(int *n,
 				   square *sq, 
 				   u8 *i)
 {
+	std::cout << "n " << ((*n) - 1) << " (*octal)[(*n)] " << static_cast<int>((*octal)[(*n) - 1]) << "\n";
+	
+	if ((*octal)[(*n) - 1] >= 8) {
+		std::cout << "does this code run\n";
+		(*octal)[(*n) - 1] = 0;
+		(*octal)[(*n) - 2] += 1;
+		(*n) -= 2;
+		return;
+	}
+	
 	if ((*piece)[(*n)].x > 8 || (*piece)[(*n)].y > 8 || (*piece)[(*n)].x < 1 || (*piece)[(*n)].y < 1) {
 		std::cout << "Out of Bounds\n";
 		(*piece)[(*n)] = (*piece)[(*n) - 1];
