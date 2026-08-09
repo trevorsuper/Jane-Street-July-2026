@@ -78,6 +78,38 @@ struct square {
 		return 0;
 	}
 	
+	template<std::size_t n>
+	static bool do_all_sections_have_towers(std::array<square, n> &board) {
+		for (u8 i = 1; i <= 13; ++i) {
+			if (!does_section_have_tower(board, i)) {
+				return 0;
+			}
+		}
+		return 1;
+	}
+	
+	static int add_neighbor_sums(std::array<square, 64> &board) {
+		constexpr int dx[] = {1, -1, 0, 0};
+		constexpr int dy[] = {0, 0, 1, -1};
+		int sum = 0;
+		
+		for (const auto &sq : board) {
+			if (sq.score == -1) {
+				u8 x = sq.x;
+				u8 y = sq.y;
+				for (u8 i = 0; i < 4; ++i) {
+					u8 nx = x + dx[i];
+					u8 ny = y + dy[i];
+					if (nx >= 1 && nx <= 8 && ny >= 1 && ny <= 8) {
+						square adjacent = get_square_at(board, nx, ny);
+						if (adjacent.score != -1) { sum += adjacent.score; }
+					}
+				}
+			}
+		}
+		return sum;
+	};
+	
 };
 
 struct knight_moves {
@@ -90,28 +122,16 @@ struct computation {
 	s64 value;
 	char operation;
 };
-							   
-u8 compute_math_steps(std::array<computation, 53> *math_steps, std::array<s32, 11> *known_steps);
+
+u8 compute_math_steps(std::array<computation, 55> *math_steps, std::array<s32, 11> *known_steps);
 
 bool find_path(std::array<square, 64> *knight_board, 
-			   std::array<computation, 53> *math_steps, 
+			   std::array<computation, 55> *math_steps, 
 			   u8 k, 
 			   std::array<knight_moves, 64> *piece, 
-			   std::array<u8, 53> *octal, 
 			   int n);
-			   
-//void evaluate_move(int *n, 
-//				   std::array<square, 64> *knight_board, 
-//				   std::array<computation, 53> *math_steps, 
-//				   std::array<knight_moves, 64> *piece, 
-//				   std::array<u8, 53> *octal, 
-//				   bool divisible, 
-//				   square *sq, 
-//				   u8 *i);
-				   
-//u64 add_neighbor_sums();
 
-u8 compute_math_steps(std::array<computation, 53> *math_steps, std::array<s32, 11> *known_steps)
+u8 compute_math_steps(std::array<computation, 55> *math_steps, std::array<s32, 11> *known_steps)
 {
 	s32 score = 0;
 	u32 math_walk = 0;
@@ -266,13 +286,12 @@ u8 compute_math_steps(std::array<computation, 53> *math_steps, std::array<s32, 1
 }
 
 bool find_path(std::array<square, 64> *knight_board, 
-			   std::array<computation, 53> *math_steps, 
+			   std::array<computation, 55> *math_steps, 
 			   u8 k, 
 			   std::array<knight_moves, 64> *piece, 
-			   std::array<u8, 53> *octal, 
 			   int n)
 {
-	if (n > 53) {
+	if (n >= 54 && square::do_all_sections_have_towers(*knight_board)) {
 		return 1;
 	}
 	
@@ -289,126 +308,127 @@ bool find_path(std::array<square, 64> *knight_board,
 		sq->score = (*math_steps)[n].value;
 		square::print_board(*knight_board);
 		(*piece)[n] = {1, 1, 1};
-		return find_path(knight_board, math_steps, k, piece, octal, n + 1);
-		}
-		
+		return find_path(knight_board, math_steps, k, piece, n + 1);
+	}
+	
+	else if (n > 0 && n <= 54) {
 		(*piece)[n] = (*piece)[n - 1];
-		bool divisible = ((n > 0 && n <= 18) && n % 3 == 0) || (n - 18 > 18 && (n - 18) % k == 0);
+		bool divisible = ((n > 0 && n <= 18) && n % 3 == 0) || (n > 18 && (n - 18) % k == 0);
 		
 		char op = (*math_steps)[n].operation;
 		u8 max_moves = (op == '+') ? 8 : 4;
-		for (u8 i = (*octal)[n]; i < max_moves; ++i) {
-			(*octal)[n] = i;
+		for (u8 i = 0; i < max_moves; ++i) {
 			(*piece)[n] = (*piece)[n - 1];
-			//(*piece)[n].altitude = 0;
 		
 		switch (op) {
 			case '+':
 				switch (i) {
-					case 0: (*piece)[n].x += 1; (*piece)[n].y += 2; std::cout << "North North East\n"; break;
-					case 1: (*piece)[n].x += 2; (*piece)[n].y += 1; std::cout << "East North East\n"; break;
-					case 2: (*piece)[n].x += 2; (*piece)[n].y -= 1; std::cout << "East South East\n"; break;
-					case 3: (*piece)[n].x += 1; (*piece)[n].y -= 2; std::cout << "South South East\n"; break;
-					case 4: (*piece)[n].x -= 1; (*piece)[n].y -= 2; std::cout << "South South West\n"; break;
-					case 5: (*piece)[n].x -= 2; (*piece)[n].y -= 1; std::cout << "West South West\n"; break;
-					case 6: (*piece)[n].x -= 2; (*piece)[n].y += 1; std::cout << "West North West\n"; break;
-					case 7: (*piece)[n].x -= 1; (*piece)[n].y += 2; std::cout << "North North West\n"; break;
+					case 0: (*piece)[n].x += 1; (*piece)[n].y += 2; /*std::cout << "North North East\n";*/ break;
+					case 1: (*piece)[n].x += 2; (*piece)[n].y += 1; /*std::cout << "East North East\n";*/ break;
+					case 2: (*piece)[n].x += 2; (*piece)[n].y -= 1; /*std::cout << "East South East\n";*/ break;
+					case 3: (*piece)[n].x += 1; (*piece)[n].y -= 2; /*std::cout << "South South East\n";*/ break;
+					case 4: (*piece)[n].x -= 1; (*piece)[n].y -= 2; /*std::cout << "South South West\n";*/ break;
+					case 5: (*piece)[n].x -= 2; (*piece)[n].y -= 1; /*std::cout << "West South West\n";*/ break;
+					case 6: (*piece)[n].x -= 2; (*piece)[n].y += 1; /*std::cout << "West North West\n";*/ break;
+					case 7: (*piece)[n].x -= 1; (*piece)[n].y += 2; /*std::cout << "North North West\n";*/ break;
 				}
 			break;
 			
 			case '*':
 				switch (i) {
-					case 0: (*piece)[n].y += 2; (*piece)[n].altitude = 1; std::cout << "North\n"; break;
-					case 1: (*piece)[n].x += 2; (*piece)[n].altitude = 1; std::cout << "East\n"; break;
-					case 2: (*piece)[n].y -= 2; (*piece)[n].altitude = 1; std::cout << "South\n"; break;
-					case 3: (*piece)[n].x -= 2; (*piece)[n].altitude = 1; std::cout << "West\n"; break;
+					case 0: (*piece)[n].y += 2; (*piece)[n].altitude = 1; /*std::cout << "North\n";*/ break;
+					case 1: (*piece)[n].x += 2; (*piece)[n].altitude = 1; /*std::cout << "East\n";*/ break;
+					case 2: (*piece)[n].y -= 2; (*piece)[n].altitude = 1; /*std::cout << "South\n";*/ break;
+					case 3: (*piece)[n].x -= 2; (*piece)[n].altitude = 1; /*std::cout << "West\n";*/ break;
 				}
 			break;
 			
 			case '/':
 				switch (i) {
-					case 0: (*piece)[n].y += 2; (*piece)[n].altitude = 0; std::cout << "North\n"; break;
-					case 1: (*piece)[n].x += 2; (*piece)[n].altitude = 0; std::cout << "East\n"; break;
-					case 2: (*piece)[n].y -= 2; (*piece)[n].altitude = 0; std::cout << "South\n"; break;
-					case 3: (*piece)[n].x -= 2; (*piece)[n].altitude = 0; std::cout << "West\n"; break;
+					case 0: (*piece)[n].y += 2; (*piece)[n].altitude = 0; /*std::cout << "North\n";*/ break;
+					case 1: (*piece)[n].x += 2; (*piece)[n].altitude = 0; /*std::cout << "East\n";*/ break;
+					case 2: (*piece)[n].y -= 2; (*piece)[n].altitude = 0; /*std::cout << "South\n";*/ break;
+					case 3: (*piece)[n].x -= 2; (*piece)[n].altitude = 0; /*std::cout << "West\n";*/ break;
 				}
 			break;
 			}
 			
 			if ((*piece)[n].x > 8 || (*piece)[n].y > 8 || (*piece)[n].x < 1 || (*piece)[n].y < 1) {
-				std::cout << "Out of Bounds\n";
+				//std::cout << "Out of Bounds\n";
 				continue;
 			}
 			
 			square *sq = &square::get_square_at(*knight_board, (*piece)[n].x, (*piece)[n].y);
 			
 			if ((*piece)[n].altitude == 1 && square::does_section_have_tower(*knight_board, (*piece)[n].x, (*piece)[n].y)) {
-				std::cout << "Altitude is 1 and section " << static_cast<int>(sq->section) << " already has tower\n";
+				//std::cout << "Altitude is 1 and section " << static_cast<int>(sq->section) << " already has tower\n";
+				//square::print_square(*knight_board, (*piece)[n].x, (*piece)[n].y);
+				//square::print_board(*knight_board);
 				continue;
 			}
 			
 			bool valid_move = 0;
 			
 			if (!divisible && sq->score == -1) {
+				//std::cout << "!divisible && sq->score == -1\n";
+				//square::print_square(*knight_board, (*piece)[n].x, (*piece)[n].y);
+				//square::print_board(*knight_board);
 				sq->score = (*math_steps)[n].value;
-				if ((*piece)[n].altitude == 1) {
-					sq->has_tower = 1;
-				}
+				if ((*piece)[n].altitude == 1) { sq->has_tower = 1; }
 				valid_move = 1;
 			}
 			
 			if (!divisible && sq->predetermined_score == 1) {
-				std::cout << "Not Divisible and predetermined score\n";
-				square::print_square(*knight_board, (*piece)[n].x, (*piece)[n].y);
+				//std::cout << "Not Divisible and predetermined score\n";
+				//square::print_square(*knight_board, (*piece)[n].x, (*piece)[n].y);
+				//square::print_board(*knight_board);
 				continue;
 			}
 			
 			if (divisible && sq->score == (*math_steps)[n].value) {
-				std::cout << "Divisible, sq->score == (*math_steps)[(*n)].value\n";
-				square::print_square(*knight_board, (*piece)[n].x, (*piece)[n].y);
+				//std::cout << "Divisible, sq->score == (*math_steps)[n].value\n";
+				//square::print_square(*knight_board, (*piece)[n].x, (*piece)[n].y);
+				//square::print_board(*knight_board);
+				if ((*piece)[n].altitude == 1 && sq->predetermined_score == 1) { sq->has_tower = 1; }
 				valid_move = 1;
 			}
 			
 			if (divisible && sq->score != (*math_steps)[n].value) {
-				std::cout << "Divisible, sq->score != (*math_steps)[(*n)].value\n";
-				square::print_square(*knight_board, (*piece)[n].x, (*piece)[n].y);
+				//std::cout << "Divisible, sq->score != (*math_steps)[n].value\n";
+				//square::print_square(*knight_board, (*piece)[n].x, (*piece)[n].y);
+				//square::print_board(*knight_board);
 				continue;
 			}
+			
 			if (valid_move) {
-			square::print_board(*knight_board);
-			
-			if (find_path(knight_board, math_steps, k, piece, octal, n + 1)) {
-				return 1;
+				//square::print_board(*knight_board);
+				if (find_path(knight_board, math_steps, k, piece, n + 1)) {
+					return 1;
+				}
+				
+				if (divisible && sq->predetermined_score == 1 && sq->has_tower == 1) { sq->has_tower = 0; }
+				
+				if (!divisible && sq->predetermined_score == 0) {
+					//std::cout << "Failed path, backtrack\n";
+					//square::print_square(*knight_board, (*piece)[n].x, (*piece)[n].y);
+					//square::print_board(*knight_board);
+					sq->score = -1;
+					if (sq->has_tower == 1) { sq->has_tower = 0; }
+				}
 			}
-			
-			// Failed path backtrack
-			if (!divisible && sq->predetermined_score == 0) {
-				sq->score = -1;
-				if (sq->has_tower == 1) { sq->has_tower = 0; }
-			}
-			
 		}
 	}
-	(*octal)[n] = 0;
 	return 0;
 }
 
-//void evaluate_move(int *n, 
-//				   std::array<square, 64> *knight_board, 
-//				   std::array<computation, 53> *math_steps, 
-//				   std::array<knight_moves, 64> *piece, 
-//				   std::array<u8, 53> *octal, 
-//				   bool divisible, 
-//				   square *sq, 
-//				   u8 *i)
-//{
-//	
-//}
-
 int main()
 {
-	std::array<computation, 53> math_steps = {{
-		{0, 0}
+	std::array<computation, 55> math_steps = {{
+		{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, 
+		{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, 
+		{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, 
+		{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, 
+		{0, 0}, {0, 0}, {0, 0}, {0, 0},
 	}};
 	
 	std::array<s32, 11> known_steps {528, 449, 750, 88, 272, 1, 16, 23, 138, 37, 1100};
@@ -416,7 +436,8 @@ int main()
 	u8 k = compute_math_steps(&math_steps, &known_steps);
 	std::cout << "k = " << static_cast<int>(k) << "\n";
 	std::cout << "math_steps: ";
-	for (int n = 0; n <= 53; ++n) {
+	math_steps[54].value = 59400; math_steps[54].operation = '*';
+	for (int n = 0; n <= 54; ++n) {
 		std::cout << "[" << n << "] " << static_cast<int>(math_steps[n].value) 
 				  << " " << math_steps[n].operation << "\n";
 	}
@@ -445,21 +466,16 @@ int main()
 		{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0},
 	}};
 	
-	std::array<u8, 53> octal = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-								0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-								0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-								0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-								0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-								0, 0, 0};
-	bool truth = find_path(&knight_board, &math_steps, k, &piece, &octal, 0);
-	std::cout << "\nbool " << truth << "\n";
+	bool truth = find_path(&knight_board, &math_steps, k, &piece, 0);
+	std::cout << "\nFound Knight's Path " << truth << "\n";
 	
-	std::cout << "FINAL octal: ";
-	for (int n = 0; n <= 53; ++n) {
-		std::cout << "[" << n << "] " << static_cast<int>(octal[n]) << "\n";
-	}
+	std::cout << "Final Board\n";
 	
-	//add_neighbor_sums();
+	square::print_board(knight_board);
+	
+	std::cout << "Do all sections have towers? " << (square::do_all_sections_have_towers(knight_board) ? "Yes\n" : "No\n");
+	
+	std::cout << "Final Answer: " << square::add_neighbor_sums(knight_board) << "\n";
 	
 	return 0;
 }
