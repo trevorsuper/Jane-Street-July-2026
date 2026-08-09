@@ -275,12 +275,12 @@ u8 compute_math_steps(std::array<computation, 55> *math_steps, std::array<s32, 1
 		}
 		
 	}
-	std::cout << "math_walk " << math_walk << "\n";
-	std::cout << "math_walk_18 " << math_walk_18 << "\n";
-	std::cout << "score_18_checkpoint " << score_18_checkpoint << "\n";
-	std::cout << "altitude_18_checkpoint " << altitude_18_checkpoint << "\n";
-	
-	std::cout << "score: " << score << "\n";
+	//std::cout << "math_walk " << math_walk << "\n";
+	//std::cout << "math_walk_18 " << math_walk_18 << "\n";
+	//std::cout << "score_18_checkpoint " << score_18_checkpoint << "\n";
+	//std::cout << "altitude_18_checkpoint " << altitude_18_checkpoint << "\n";
+	//
+	//std::cout << "score: " << score << "\n";
 	
 	return k;
 }
@@ -467,13 +467,9 @@ int main()
 	}};
 	
 	bool truth = find_path(&knight_board, &math_steps, k, &piece, 0);
-	std::cout << "\nFound Knight's Path " << truth << "\n";
-	
-	std::cout << "Final Board\n";
+	std::cout << "\nFound Knight's Path " << truth << "\nFinal Board\n";
 	
 	square::print_board(knight_board);
-	
-	std::cout << "Do all sections have towers? " << (square::do_all_sections_have_towers(knight_board) ? "Yes\n" : "No\n");
 	
 	std::cout << "Final Answer: " << square::add_neighbor_sums(knight_board) << "\n";
 	

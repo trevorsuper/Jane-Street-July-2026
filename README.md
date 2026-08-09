@@ -1,4 +1,5 @@
 # Pent-Up Frustration 3 / Knight Moves 7
+Runs in about 0.03 seconds on x64 hardware
 ![pic](pent-3-knight-7.webp)<br>
 The board above has been tiled with the 12 pentominoes (plus a 2-by-2 tetromino) into 13 regions. Think of each of these 13 regions as constructed out of 1-by-1-by-1 cubes. We need to add a tower to each region. A tower is an additional size-1 cube placed on one of a region’s squares.<br>
 <br>
